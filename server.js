@@ -17,13 +17,31 @@ mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNew
 const typeDefs= gql `
     type Usuario{
         id: ID!
-        email: String!
-        pass: String!
+        rut: String,
+        nombre: String,
+        direccion: String,
+        comuna: String,
+        provincia: String,
+        region: String,
+        sexo: String,
+        telefono: String,
+        email: String,
+        pass: String,
+        rol: String
     }
 
     input UsuarioInput{
-        email: String!
-        pass: String!
+        rut: String,
+        nombre: String,
+        direccion: String,
+        comuna: String,
+        provincia: String,
+        region: String,
+        sexo: String,
+        telefono: String,
+        email: String,
+        pass: String,
+        rol: String
     }
 
     type Alert{
