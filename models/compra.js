@@ -9,4 +9,4 @@ const schema = new mongoose.Schema({
     estado: String
 });
 
-module.exports = mongoose.model("Producto", schema);
+module.exports = mongoose.model("Compra", schema);
