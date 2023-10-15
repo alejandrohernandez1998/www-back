@@ -11,6 +11,7 @@ const {ApolloServer,gql}=require("apollo-server-express")
 const {merge} =require("lodash")
 
 const Usuario=require("./models/usuario")
+const Compra = require("./models/compra")
 
 mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNewUrlParser:true,useUnifiedTopology:true})
 
@@ -44,6 +45,23 @@ const typeDefs= gql `
         rol: String
     }
 
+    type Compra{
+        id: ID!
+        pedido: [{
+            id_producto: ID
+            cantidad: Number
+        }]
+        estado: String
+    }
+
+    input CompraInput{
+        pedido: [{
+            id_producto: ID
+            cantidad: Number
+        }]
+        estado: String
+    }
+
     type Alert{
         message: String
     }
@@ -51,12 +69,17 @@ const typeDefs= gql `
     type Query{
         getUsuarios: [Usuario]
         getUsuario(id:ID!): Usuario
+        getCompras: [Compra]
+        getCompra(id:ID!): Compra
     }
 
     type Mutation {
         addUsuario(input:UsuarioInput): Usuario
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
         deleteUsuario(id: ID!): Alert
+        addCompra(input:CompraInput): Compra
+        updateCompra(id: ID!, input: CompraInput): Compra
+        deleteCompra(id: ID!): Alert
     }
 
 `
@@ -71,8 +94,15 @@ const resolvers = {
         async getUsuario(obj,{id}){
             const usuario=await Usuario.findById(id)
             return usuario
-        }
+        },
 
+        async getCompras(obj){
+            return await Compra.find()
+        },
+
+        async getCompra(obj, {id}){
+            return await Compra.findById(id)
+        }
     },
     Mutation:{
         async addUsuario(obj,{input}){
@@ -91,9 +121,25 @@ const resolvers = {
             return{
                 message:"Usuario eliminado"
             }
+        },
+
+        async addCompra(obj, {input}){
+            const compra = new Compra(input)
+            await compra.save()
+            return compra
+        },
+
+        async updateCompra(obj, {id, input}){
+            return await Compra.findByIdAndUpdate(id, input)
+        },
+
+        async deleteCompra(obj, {id}){
+            await Compra.deleteOne({_id: id})
+            return {
+                message: "Compra eliminada"
+            }
         }
     }
-
 }
 
 let apolloServer=null
