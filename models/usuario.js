@@ -14,4 +14,10 @@ const usuarioSchema= new mongoose.Schema({
     rol:String
 })
 
+const productoSchema= new mongoose.Schema({
+    nombre:String,
+    precio:String
+})
+
 module.exports=mongoose.model("usuario",usuarioSchema)
+module.exports=mongoose.model("producto",productoSchema)

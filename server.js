@@ -11,52 +11,69 @@ const {ApolloServer,gql}=require("apollo-server-express")
 const {merge} =require("lodash")
 
 const Usuario=require("./models/usuario")
+const Producto=require("./models/producto")
 
 mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNewUrlParser:true,useUnifiedTopology:true})
 
 const typeDefs= gql `
     type Usuario{
-        id: ID!
-        rut: String,
-        nombre: String,
-        direccion: String,
-        comuna: String,
-        provincia: String,
-        region: String,
-        sexo: String,
-        telefono: String,
-        email: String,
-        pass: String,
-        rol: String
+			id: ID!
+			rut: String,
+			nombre: String,
+			direccion: String,
+			comuna: String,
+			provincia: String,
+			region: String,
+			sexo: String,
+			telefono: String,
+			email: String,
+			pass: String,
+			rol: String
     }
+		
+		type Producto{
+			id: ID!
+			nombre: String,
+			precio: String
+		}
 
     input UsuarioInput{
-        rut: String,
-        nombre: String,
-        direccion: String,
-        comuna: String,
-        provincia: String,
-        region: String,
-        sexo: String,
-        telefono: String,
-        email: String,
-        pass: String,
-        rol: String
+			rut: String,
+			nombre: String,
+			direccion: String,
+			comuna: String,
+			provincia: String,
+			region: String,
+			sexo: String,
+			telefono: String,
+			email: String,
+			pass: String,
+			rol: String
     }
+		
+		input ProductoInput{
+			nombre: String,
+			precio: String
+		}
 
     type Alert{
-        message: String
+			message: String
     }
 
     type Query{
-        getUsuarios: [Usuario]
-        getUsuario(id:ID!): Usuario
+			getUsuarios: [Usuario]
+			getUsuario(id:ID!): Usuario
+			getProductos: [Producto]
+			getProductos(id:ID!): Producto
     }
 
     type Mutation {
-        addUsuario(input:UsuarioInput): Usuario
-        updateUsuario(id: ID!, input:UsuarioInput): Usuario
-        deleteUsuario(id: ID!): Alert
+			addUsuario(input:UsuarioInput): Usuario
+			updateUsuario(id: ID!, input:UsuarioInput): Usuario
+			deleteUsuario(id: ID!): Alert
+			addProducto(input: ProductoInput): Producto
+			updateProducto(id: ID!, input:ProductoInput): Producto
+			deleteProducto(id: ID!): Alert
     }
 
 `
@@ -71,6 +88,16 @@ const resolvers = {
         async getUsuario(obj,{id}){
             const usuario=await Usuario.findById(id)
             return usuario
+        },
+
+				async getProductos(obj){
+            const productos=await Producto.find()
+            return productos
+        },
+				
+				async getUsuario(obj,{id}){
+            const producto=await Producto.findById()
+            return producto
         }
 
     },
@@ -90,6 +117,24 @@ const resolvers = {
             await Usuario.deleteOne({_id:id})
             return{
                 message:"Usuario eliminado"
+            }
+        },
+				
+				async addProduto(obj,{input}){
+            const producto=new Producto(input)
+            await producto.save()
+            return producto
+        },
+
+				async updateProducto(obj,{id, input}){
+            const producto=await  Producto.findByIdAndUpdate(id,input)
+            return producto
+        },
+				
+				async deleteProducto(obj,{id}){
+            await Producto.deleteOne({_id:id})
+            return{
+                message:"Producto eliminado"
             }
         }
     }
