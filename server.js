@@ -12,70 +12,92 @@ const {merge} =require("lodash")
 
 const Usuario=require("./models/usuario")
 const Producto=require("./models/producto")
+const Compra = require("./models/compra")
 
 mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNewUrlParser:true,useUnifiedTopology:true})
 
 const typeDefs= gql `
     type Usuario{
-			id: ID!
-			rut: String,
-			nombre: String,
-			direccion: String,
-			comuna: String,
-			provincia: String,
-			region: String,
-			sexo: String,
-			telefono: String,
-			email: String,
-			pass: String,
-			rol: String
+        id: ID!
+        rut: String,
+        nombre: String,
+        direccion: String,
+        comuna: String,
+        provincia: String,
+        region: String,
+        sexo: String,
+        telefono: String,
+        email: String,
+        pass: String,
+        rol: String
     }
 		
-		type Producto{
-			id: ID!
-			nombre: String,
-			precio: String
-		}
+    type Producto{
+        id: ID!
+        nombre: String,
+        precio: String
+    }
 
     input UsuarioInput{
-			rut: String,
-			nombre: String,
-			direccion: String,
-			comuna: String,
-			provincia: String,
-			region: String,
-			sexo: String,
-			telefono: String,
-			email: String,
-			pass: String,
-			rol: String
+        rut: String,
+        nombre: String,
+        direccion: String,
+        comuna: String,
+        provincia: String,
+        region: String,
+        sexo: String,
+        telefono: String,
+        email: String,
+        pass: String,
+        rol: String
     }
 		
-		input ProductoInput{
-			nombre: String,
-			precio: String
-		}
+    input ProductoInput{
+        nombre: String,
+        precio: String
+    }
+
+    type Compra{
+        id: ID!
+        pedido: [{
+            id_producto: ID
+            cantidad: Number
+        }]
+        estado: String
+    }
+
+    input CompraInput{
+        pedido: [{
+            id_producto: ID
+            cantidad: Number
+        }]
+        estado: String
+    }
 
     type Alert{
-			message: String
+        message: String
     }
 
     type Query{
-			getUsuarios: [Usuario]
-			getUsuario(id:ID!): Usuario
-			getProductos: [Producto]
-			getProductos(id:ID!): Producto
+        getUsuarios: [Usuario]
+        getUsuario(id:ID!): Usuario
+        getProducto: [Producto]
+        getProductos(id:ID!): Producto
+        getCompras: [Compra]
+        getCompra(id:ID!): Compra
     }
 
     type Mutation {
-			addUsuario(input:UsuarioInput): Usuario
-			updateUsuario(id: ID!, input:UsuarioInput): Usuario
-			deleteUsuario(id: ID!): Alert
-			addProducto(input: ProductoInput): Producto
-			updateProducto(id: ID!, input:ProductoInput): Producto
-			deleteProducto(id: ID!): Alert
+        addUsuario(input:UsuarioInput): Usuario
+        updateUsuario(id: ID!, input:UsuarioInput): Usuario
+        deleteUsuario(id: ID!): Alert
+        addProducto(input: ProductoInput): Producto
+        updateProducto(id: ID!, input:ProductoInput): Producto
+        deleteProducto(id: ID!): Alert
+        addCompra(input:CompraInput): Compra
+        updateCompra(id: ID!, input: CompraInput): Compra
+        deleteCompra(id: ID!): Alert
     }
-
 `
 
 const resolvers = {
@@ -90,16 +112,23 @@ const resolvers = {
             return usuario
         },
 
-				async getProductos(obj){
+        async getProductos(obj){
             const productos=await Producto.find()
             return productos
         },
 				
-				async getUsuario(obj,{id}){
+        async getProducto(obj,{id}){
             const producto=await Producto.findById()
             return producto
-        }
+        },
 
+        async getCompras(obj){
+            return await Compra.find()
+        },
+
+        async getCompra(obj, {id}){
+            return await Compra.findById(id)
+        }
     },
     Mutation:{
         async addUsuario(obj,{input}){
@@ -120,25 +149,41 @@ const resolvers = {
             }
         },
 				
-				async addProduto(obj,{input}){
+        async addProducto(obj,{input}){
             const producto=new Producto(input)
             await producto.save()
             return producto
         },
 
-				async updateProducto(obj,{id, input}){
-            const producto=await  Producto.findByIdAndUpdate(id,input)
+        async updateProducto(obj,{id, input}){
+            const producto=await Producto.findByIdAndUpdate(id,input)
             return producto
         },
 				
-				async deleteProducto(obj,{id}){
+        async deleteProducto(obj,{id}){
             await Producto.deleteOne({_id:id})
             return{
                 message:"Producto eliminado"
             }
+        },
+
+        async addCompra(obj, {input}){
+            const compra = new Compra(input)
+            await compra.save()
+            return compra
+        },
+
+        async updateCompra(obj, {id, input}){
+            return await Compra.findByIdAndUpdate(id, input)
+        },
+
+        async deleteCompra(obj, {id}){
+            await Compra.deleteOne({_id: id})
+            return {
+                message: "Compra eliminada"
+            }
         }
     }
-
 }
 
 let apolloServer=null
