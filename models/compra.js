@@ -1,12 +1,17 @@
 const mongoose = require('mongoose');
 
+
+const Schema = mongoose.Schema;
+
+const productoSchema = new mongoose.Schema({
+    idproducto: String,
+    cantidad: Number
+});
+
 const schema = new mongoose.Schema({
     usuario: String,
-    pedido: [{
-        id_producto: mongoose.ObjectID,
-        cantidad: Number
-    }],
-    estado: String
+    estado: String,
+    productos: [productoSchema] // Añade el arreglo de productos al esquema
 });
 
 module.exports = mongoose.model("Compra", schema);

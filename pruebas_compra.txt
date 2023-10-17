@@ -1,0 +1,54 @@
+mutation AddCompra($input: CompraInput) {
+  addCompra(input: {
+    estado: "preparandose",
+    productos: [
+      { idproducto: "652c89f4b49dec8280603d1d", cantidad: 2 },
+      { idproducto: "652de7d027e1003d9309d61c", cantidad: 3 }
+    ],
+    usuario: "652adbaae1669227f44ddfea"
+  }) {
+    estado
+    productos {
+      cantidad
+      idproducto
+    }
+  }
+}
+
+
+mutation DeleteCompra($deleteCompraId: ID!) {
+  deleteCompra(id: "652de7f427e1003d9309d61e") {
+    message
+  }
+}
+
+mutation UpdateCompra($updateCompraId: ID!, $input: CompraInput) {
+  updateCompra(id: "652de7f427e1003d9309d61e", input: {
+    estado: "Entregado",
+    productos: [
+      { idproducto: "652c89f4b49dec8280603d1d", cantidad: 2 },
+      { idproducto: "652de7d027e1003d9309d61c", cantidad: 3 }
+    ],
+    usuario: "652adbaae1669227f44ddfea"
+  }) {
+    estado
+    id
+    productos {
+      cantidad
+    }
+  }
+}
+
+
+
+query GetCompras($getCompraId: ID!) {
+  getCompra(id: "652de7f427e1003d9309d61e") {
+    estado
+    id
+    productos {
+      cantidad
+      idproducto
+    }
+    usuario
+  }
+}

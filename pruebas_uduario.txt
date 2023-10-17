@@ -1,0 +1,44 @@
+mutation Mutation($input: UsuarioInput) {
+  addUsuario(input: {
+    comuna:"Santiago"
+    direccion:"Calle 123"
+    email:"al12@gmail.com"
+    nombre:"Juan"
+    pass:"123"
+    provincia:"Santiago"
+    region:"Metropolitana"
+    rol:"admin"
+    rut:"18281728-2"
+    sexo:"Masculino"
+    telefono:"6166161616"
+  }) {
+    message
+  }
+}
+
+
+mutation DeleteUsuario($deleteUsuarioId: ID!) {
+  deleteUsuario(id: "652adbaae1669227f44ddfea") {
+    message
+  }
+}
+
+mutation UpdateUsuario($updateUsuarioId: ID!, $input: UsuarioInput) {
+  updateUsuario(id: "652de89c27e1003d9309d622", input:  {
+    rol:"admin"
+  }) {
+    comuna
+    direccion
+    email
+    nombre
+  }
+}
+
+
+query GetUsuario($getUsuarioId: ID!) {
+  getUsuario(id: "652adbaae1669227f44ddfea") {
+    comuna
+    direccion
+    id
+  }
+}

@@ -1,6 +1,7 @@
 const express= require("express")
 const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
+const bcrypt = require('bcrypt');
 const cors=require("cors")
 
 const {ApolloServer,gql}=require("apollo-server-express")
@@ -35,7 +36,7 @@ const typeDefs= gql `
     type Producto{
         id: ID!
         nombre: String,
-        precio: String
+        precio: Int
     }
 
     input UsuarioInput{
@@ -54,24 +55,32 @@ const typeDefs= gql `
 		
     input ProductoInput{
         nombre: String,
-        precio: String
+        precio: Int
     }
 
-    type Compra{
+    
+    type ProductoEnCompra {
+        idproducto: String
+        cantidad: Int
+    }
+    type Compra {
         id: ID!
-        pedido: [{
-            id_producto: ID
-            cantidad: Number
-        }]
+        usuario: String
         estado: String
+        productos: [ProductoEnCompra]
+    }
+    
+    
+    
+    input ProductoEnCompraInput {
+        idproducto: String
+        cantidad: Int
     }
 
-    input CompraInput{
-        pedido: [{
-            id_producto: ID
-            cantidad: Number
-        }]
+    input CompraInput {
+        usuario: String
         estado: String
+        productos: [ProductoEnCompraInput]
     }
 
     type Alert{
@@ -81,14 +90,15 @@ const typeDefs= gql `
     type Query{
         getUsuarios: [Usuario]
         getUsuario(id:ID!): Usuario
-        getProducto: [Producto]
-        getProductos(id:ID!): Producto
+        getProductos: [Producto]
+        getProducto(id:ID!): Producto
         getCompras: [Compra]
         getCompra(id:ID!): Compra
+        login(input:UsuarioInput):Usuario
     }
 
     type Mutation {
-        addUsuario(input:UsuarioInput): Usuario
+        addUsuario(input:UsuarioInput): Alert
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
         deleteUsuario(id: ID!): Alert
         addProducto(input: ProductoInput): Producto
@@ -118,7 +128,7 @@ const resolvers = {
         },
 				
         async getProducto(obj,{id}){
-            const producto=await Producto.findById()
+            const producto=await Producto.findById(id)
             return producto
         },
 
@@ -128,13 +138,35 @@ const resolvers = {
 
         async getCompra(obj, {id}){
             return await Compra.findById(id)
+        },
+        async login(obj,{input}){
+            const usuario = await Usuario.findOne({email:input.email});
+            const validPassword = bcrypt.compareSync( input.pass, usuario.pass );
+            if ( !validPassword ) {
+                console.log("Contraseña mala");
+            }
+            return usuario
         }
     },
     Mutation:{
         async addUsuario(obj,{input}){
+
+            let usuario_re = await Usuario.findOne({ email:input.email });
+
+            if ( usuario_re ) {
+                return{
+                    message:"Error el email ya esta registrado"
+                }
+            }
+
+
             const usuario=new Usuario(input)
+            const salt = bcrypt.genSaltSync();
+            usuario.pass = bcrypt.hashSync( input.pass, salt );    
             await usuario.save()
-            return usuario
+            return{
+                message:"Usuario registrado"
+            }
         },
 
         async updateUsuario(obj,{id, input}){
@@ -168,6 +200,7 @@ const resolvers = {
         },
 
         async addCompra(obj, {input}){
+            console.log(input);
             const compra = new Compra(input)
             await compra.save()
             return compra

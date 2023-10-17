@@ -1,0 +1,30 @@
+mutation AddProducto($input: ProductoInput) {
+  addProducto(input: {nombre:"Sushi 10",precio:1500}) {
+    id
+    nombre
+    precio
+  }
+}
+
+mutation DeleteProducto($deleteProductoId: ID!) {
+  deleteProducto(id: "652dea22a840cd291e7d6821") {
+    message
+  }
+}
+
+
+mutation UpdateProducto($updateProductoId: ID!, $input: ProductoInput) {
+  updateProducto(id: "652dea22a840cd291e7d6821", input: {precio:1000}) {
+    id
+    nombre
+    precio
+  }
+}
+
+query GetProducto($getProductoId: ID!) {
+  getProducto(id: "652de7d027e1003d9309d61c") {
+    id
+    nombre
+    precio
+  }
+}
