@@ -1,17 +1,11 @@
 mutation AddCompra($input: CompraInput) {
-  addCompra(input: {
-    estado: "preparandose",
+  addCompra(id: "653ed90efd499f138fd26a28",input: {
     productos: [
       { idproducto: "652c89f4b49dec8280603d1d", cantidad: 2 },
       { idproducto: "652de7d027e1003d9309d61c", cantidad: 3 }
-    ],
-    usuario: "652adbaae1669227f44ddfea"
+    ]
   }) {
-    estado
-    productos {
-      cantidad
-      idproducto
-    }
+    usuario
   }
 }
 
@@ -22,27 +16,67 @@ mutation DeleteCompra($deleteCompraId: ID!) {
   }
 }
 
-mutation UpdateCompra($updateCompraId: ID!, $input: CompraInput) {
-  updateCompra(id: "652de7f427e1003d9309d61e", input: {
+mutation UpdateCompra($updateCompraId: ID!, $input: CompraInputUpdate) {
+  updateCompra(id: "653ee1890db2d3694f97efc3", input: {
     estado: "Entregado",
-    productos: [
-      { idproducto: "652c89f4b49dec8280603d1d", cantidad: 2 },
-      { idproducto: "652de7d027e1003d9309d61c", cantidad: 3 }
-    ],
-    usuario: "652adbaae1669227f44ddfea"
   }) {
-    estado
     id
+  }
+}
+
+query GetCompras {
+  getCompras {
+    estado
     productos {
       cantidad
+      nombre
+    }
+    direccion {
+      comuna
+      direccion
+      provincia
+      region
+    }
+  }
+}
+
+query GetCompra($getCompraId: ID!) {
+  getCompra(id: "653ed90efd499f138fd26a28") {
+     estado
+    productos {
+      cantidad
+      nombre
+    }
+    direccion {
+      comuna
+      direccion
+      provincia
+      region
+    }
+  }
+}
+
+  getComprasEstado query ($input: EstadoInput) {
+    getComprasEstado(input: {estado:"Entregado"}) {
+      estado
+      usuario
+      direccion {
+        comuna
+        direccion
+        provincia
+        region
+      }
+      productos {
+        cantidad
+        nombre
+      }
     }
   }
 }
 
 
-
 query GetCompras($getCompraId: ID!) {
-  getCompra(id: "652de7f427e1003d9309d61e") {
+  getCompra() {
     estado
     id
     productos {

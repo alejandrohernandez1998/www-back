@@ -1,0 +1,13 @@
+mutation AddRol($input: RolInput) {
+  addRol(input: {
+    nombre: "admin"
+  }) {
+    message
+  }
+}
+
+mutation DeleteRol($deleteRolId: ID!) {
+  deleteRol(id: "653ed6cfa02a92da55c680da") {
+    message
+  }
+}

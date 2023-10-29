@@ -10,8 +10,7 @@ const usuarioSchema= new mongoose.Schema({
     sexo:String,
     telefono:String,
     email:String,
-    pass:String,
-    rol:String
+    pass:String
 })
 
 module.exports=mongoose.model("usuario",usuarioSchema)

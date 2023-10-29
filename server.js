@@ -14,6 +14,10 @@ const {merge} =require("lodash")
 const Usuario=require("./models/usuario")
 const Producto=require("./models/producto")
 const Compra = require("./models/compra")
+const Rol = require("./models/rol")
+const Rol_Usuario = require("./models/rol_usuario");
+const ProductoCompra = require("./models/productos_compra");
+
 
 mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNewUrlParser:true,useUnifiedTopology:true})
 
@@ -30,7 +34,11 @@ const typeDefs= gql `
         telefono: String,
         email: String,
         pass: String,
-        rol: String
+    }
+
+    type Rol{
+        id: ID!
+        nombre: String
     }
 		
     type Producto{
@@ -49,8 +57,7 @@ const typeDefs= gql `
         sexo: String,
         telefono: String,
         email: String,
-        pass: String,
-        rol: String
+        pass: String
     }
 		
     input ProductoInput{
@@ -58,29 +65,49 @@ const typeDefs= gql `
         precio: Int
     }
 
+    input RolInput{
+        nombre: String
+    }
+
+    input EstadoInput{
+        estado: String
+    }
+
     
     type ProductoEnCompra {
-        idproducto: String
+        nombre: String
         cantidad: Int
     }
+
+    type direccionjson {
+        direccion: String,
+        comuna: String,
+        provincia: String,
+        region: String,
+    }
+
+
     type Compra {
         id: ID!
         usuario: String
         estado: String
+        direccion:direccionjson
         productos: [ProductoEnCompra]
     }
     
     
     
     input ProductoEnCompraInput {
-        idproducto: String
+        nombre: String
         cantidad: Int
     }
 
     input CompraInput {
-        usuario: String
-        estado: String
         productos: [ProductoEnCompraInput]
+    }
+
+    input CompraInputUpdate {
+        estado: String
     }
 
     type Alert{
@@ -90,22 +117,27 @@ const typeDefs= gql `
     type Query{
         getUsuarios: [Usuario]
         getUsuario(id:ID!): Usuario
+        getRol(id:ID!): Rol
         getProductos: [Producto]
         getProducto(id:ID!): Producto
         getCompras: [Compra]
-        getCompra(id:ID!): Compra
+        getComprasEstado(input:EstadoInput): [Compra]
+        getCompra(id:ID!): [Compra]
         login(input:UsuarioInput):Usuario
     }
 
     type Mutation {
         addUsuario(input:UsuarioInput): Alert
+        addRol(input:RolInput): Alert
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
+        updateRolUsuario(id: ID!, input:RolInput): Alert
         deleteUsuario(id: ID!): Alert
+        deleteRol(id: ID!): Alert
         addProducto(input: ProductoInput): Producto
         updateProducto(id: ID!, input:ProductoInput): Producto
         deleteProducto(id: ID!): Alert
-        addCompra(input:CompraInput): Compra
-        updateCompra(id: ID!, input: CompraInput): Compra
+        addCompra(id: ID!,input:CompraInput): Compra
+        updateCompra(id: ID!, input: CompraInputUpdate): Compra
         deleteCompra(id: ID!): Alert
     }
 `
@@ -121,6 +153,12 @@ const resolvers = {
             const usuario=await Usuario.findById(id)
             return usuario
         },
+        async getRol(obj,{id}){
+            console.log(id);
+            const rol_user=await Rol_Usuario.findOne({usuario:id})
+            const rol_=await Rol.findById(rol_user.rol)
+            return rol_
+        },
 
         async getProductos(obj){
             const productos=await Producto.find()
@@ -133,11 +171,49 @@ const resolvers = {
         },
 
         async getCompras(obj){
-            return await Compra.find()
+            const lista=await Compra.find()
+            const lista_return=[] 
+            for (const element of lista) {
+                const lista_productos= await ProductoCompra.find({compra:element._id})
+                const lista_add=[]
+                for (const element1 of lista_productos) {
+                    const produc=await Producto.findById(element1.producto)
+                    lista_add.push({nombre:produc.nombre,cantidad:element1.cantidad})
+                }
+                lista_return.push({...element._doc,productos:lista_add})
+            }
+
+            return lista_return
         },
 
         async getCompra(obj, {id}){
-            return await Compra.findById(id)
+            const lista=await Compra.find({usuario:id})
+            const lista_return=[] 
+            for (const element of lista) {
+                const lista_productos= await ProductoCompra.find({compra:element._id})
+                const lista_add=[]
+                for (const element1 of lista_productos) {
+                    const produc=await Producto.findById(element1.producto)
+                    lista_add.push({nombre:produc.nombre,cantidad:element1.cantidad})
+                }
+                lista_return.push({...element._doc,productos:lista_add})
+            }
+
+            return lista_return
+        },
+        async getComprasEstado(obj, {input}){
+            const lista=await Compra.find(input)
+            const lista_return=[] 
+            for (const element of lista) {
+                const lista_productos= await ProductoCompra.find({compra:element._id})
+                const lista_add=[]
+                for (const element1 of lista_productos) {
+                    const produc=await Producto.findById(element1.producto)
+                    lista_add.push({nombre:produc.nombre,cantidad:element1.cantidad})
+                }
+                lista_return.push({...element._doc,productos:lista_add})
+            }
+            return lista_return
         },
         async login(obj,{input}){
             const usuario = await Usuario.findOne({email:input.email});
@@ -163,9 +239,19 @@ const resolvers = {
             const usuario=new Usuario(input)
             const salt = bcrypt.genSaltSync();
             usuario.pass = bcrypt.hashSync( input.pass, salt );    
-            await usuario.save()
+            const usuario_resp=await usuario.save()
+            const rol_user= new Rol_Usuario({usuario:usuario_resp._id,rol:"653ed6eea02a92da55c680dc"})
+            await rol_user.save()
             return{
                 message:"Usuario registrado"
+            }
+        },
+        async addRol(obj,{input}){
+            const RolAdd=new Rol (input)
+            await RolAdd.save()
+            
+            return{
+                message:"Rol registrado"
             }
         },
 
@@ -176,8 +262,16 @@ const resolvers = {
 
         async deleteUsuario(obj,{id}){
             await Usuario.deleteOne({_id:id})
+            await Rol_Usuario.deleteOne({usuario:id})
             return{
                 message:"Usuario eliminado"
+            }
+        },
+
+        async deleteRol(obj,{id}){
+            await Rol.deleteOne({_id:id})
+            return{
+                message:"Rol eliminado"
             }
         },
 				
@@ -191,6 +285,17 @@ const resolvers = {
             const producto=await Producto.findByIdAndUpdate(id,input)
             return producto
         },
+
+        async updateRolUsuario(obj,{id, input}){
+            const rol_user=await Rol_Usuario.findOne({usuario:id})
+            console.log(rol_user);
+            const rol_asignar=await Rol.findOne(input)
+            console.log(rol_asignar);
+            await Rol_Usuario.findByIdAndUpdate(rol_user._id,{rol:rol_asignar._id})
+            return{
+                message:"Se cambio el rol del usuario"
+            } 
+        },
 				
         async deleteProducto(obj,{id}){
             await Producto.deleteOne({_id:id})
@@ -199,10 +304,21 @@ const resolvers = {
             }
         },
 
-        async addCompra(obj, {input}){
-            console.log(input);
-            const compra = new Compra(input)
-            await compra.save()
+        async addCompra(obj, {id,input}){
+            const user= await Usuario.findById(id)
+            const compra = new Compra({usuario:id,direccion:{
+                direccion:user.direccion,
+                comuna:user.comuna,
+                provincia:user.provincia,
+                region:user.region
+            }})
+            const re_compra=await compra.save()
+        
+            for (const element of input.productos) {
+                const pro= new ProductoCompra({producto:element.idproducto,cantidad:element.cantidad,compra:re_compra._id})
+                await pro.save()
+            }
+
             return compra
         },
 
@@ -212,6 +328,12 @@ const resolvers = {
 
         async deleteCompra(obj, {id}){
             await Compra.deleteOne({_id: id})
+            const lista= await ProductoCompra.find({compra:id})
+
+            for (const element of lista) {
+                await ProductoCompra.deleteOne({_id: element._id})
+            }
+
             return {
                 message: "Compra eliminada"
             }
