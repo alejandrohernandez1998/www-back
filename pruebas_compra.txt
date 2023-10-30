@@ -1,9 +1,10 @@
 mutation AddCompra($input: CompraInput) {
   addCompra(id: "653ed90efd499f138fd26a28",input: {
     productos: [
-      { idproducto: "652c89f4b49dec8280603d1d", cantidad: 2 },
-      { idproducto: "652de7d027e1003d9309d61c", cantidad: 3 }
-    ]
+      { idproducto: "652de7d027e1003d9309d61c", cantidad: 2 },
+      { idproducto: "652dea22a840cd291e7d6821", cantidad: 3 }
+    ],
+    Monto:10000
   }) {
     usuario
   }
@@ -24,6 +25,7 @@ mutation UpdateCompra($updateCompraId: ID!, $input: CompraInputUpdate) {
   }
 }
 
+
 query GetCompras {
   getCompras {
     estado
@@ -39,6 +41,8 @@ query GetCompras {
     }
   }
 }
+
+//Ingresar usuarios
 
 query GetCompra($getCompraId: ID!) {
   getCompra(id: "653ed90efd499f138fd26a28") {
@@ -74,15 +78,3 @@ query GetCompra($getCompraId: ID!) {
   }
 }
 
-
-query GetCompras($getCompraId: ID!) {
-  getCompra() {
-    estado
-    id
-    productos {
-      cantidad
-      idproducto
-    }
-    usuario
-  }
-}

@@ -93,17 +93,19 @@ const typeDefs= gql `
         estado: String
         direccion:direccionjson
         productos: [ProductoEnCompra]
+        Monto: Int
     }
     
     
     
     input ProductoEnCompraInput {
-        nombre: String
+        idproducto: String
         cantidad: Int
     }
 
     input CompraInput {
         productos: [ProductoEnCompraInput]
+        Monto: Int
     }
 
     input CompraInputUpdate {
@@ -131,6 +133,8 @@ const typeDefs= gql `
         addRol(input:RolInput): Alert
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
         updateRolUsuario(id: ID!, input:RolInput): Alert
+        updateProductoOcultar(id: ID!): Alert
+        updateProductoMostrar(id: ID!): Alert
         deleteUsuario(id: ID!): Alert
         deleteRol(id: ID!): Alert
         addProducto(input: ProductoInput): Producto
@@ -161,7 +165,7 @@ const resolvers = {
         },
 
         async getProductos(obj){
-            const productos=await Producto.find()
+            const productos=await Producto.find({visible:1})
             return productos
         },
 				
@@ -260,6 +264,20 @@ const resolvers = {
             return usuario
         },
 
+        async updateProductoMostrar(obj,{id}){
+            await  Producto.findByIdAndUpdate(id,{visible:1})
+            return{
+                message:"Producto Visible"
+            }
+        },
+
+        async updateProductoOcultar(obj,{id}){
+            await  Producto.findByIdAndUpdate(id,{visible:0})
+            return{
+                message:"Producto no Visible"
+            }
+        },
+
         async deleteUsuario(obj,{id}){
             await Usuario.deleteOne({_id:id})
             await Rol_Usuario.deleteOne({usuario:id})
@@ -311,7 +329,7 @@ const resolvers = {
                 comuna:user.comuna,
                 provincia:user.provincia,
                 region:user.region
-            }})
+            },Monto:input.Monto})
             const re_compra=await compra.save()
         
             for (const element of input.productos) {

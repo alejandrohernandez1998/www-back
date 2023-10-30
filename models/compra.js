@@ -13,7 +13,8 @@ const schema = new mongoose.Schema({
     direccion:{
         type: mongoose.Schema.Types.Mixed,
         required: true
-    }
+    },
+    Monto: Number
 });
 
 module.exports = mongoose.model("Compra", schema);

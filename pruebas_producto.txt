@@ -6,6 +6,15 @@ mutation AddProducto($input: ProductoInput) {
   }
 }
 
+query GetProductos {
+  getProductos {
+    id
+    nombre
+    precio
+  }
+}
+
+
 mutation DeleteProducto($deleteProductoId: ID!) {
   deleteProducto(id: "652dea22a840cd291e7d6821") {
     message
@@ -26,5 +35,18 @@ query GetProducto($getProductoId: ID!) {
     id
     nombre
     precio
+  }
+}
+
+
+mutation UpdateProductoMostrar($updateProductoMostrarId: ID!) {
+  updateProductoMostrar(id: "652dea22a840cd291e7d6821") {
+    message
+  }
+}
+
+mutation UpdateProductoOcultar($updateProductoOcultarId: ID!) {
+  updateProductoOcultar(id: "652dea22a840cd291e7d6821") {
+    message
   }
 }
