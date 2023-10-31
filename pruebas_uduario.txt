@@ -2,9 +2,9 @@ mutation Mutation($input: UsuarioInput) {
   addUsuario(input: {
     comuna:"Santiago"
     direccion:"Calle 123"
-    email:"al1223@gmail.com"
+    email:"correo_ejemplo@gmail.com"
     nombre:"Juan"
-    pass:"123"
+    pass:"contraseña"
     provincia:"Santiago"
     region:"Metropolitana"
     rut:"18281728-2"
@@ -53,5 +53,13 @@ query GetRol($getRolId: ID!) {
 mutation UpdateRolUsuario($updateRolUsuarioId: ID!, $input: RolInput) {
   updateRolUsuario(id:"653ed91cfd499f138fd26a2d", input: {nombre:"admin"}) {
     message
+  }
+}
+
+query Login($input: UsuarioInputLogin) {
+  login(input: {    email:"correo_ejemplo@gmail.com",
+    pass:"contraseña"}) {
+    Rol
+    id
   }
 }

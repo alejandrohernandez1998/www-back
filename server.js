@@ -36,6 +36,11 @@ const typeDefs= gql `
         pass: String,
     }
 
+    type UsuarioLogin{
+        id: ID!,
+        Rol: String
+    }
+
     type Rol{
         id: ID!
         nombre: String
@@ -56,6 +61,11 @@ const typeDefs= gql `
         region: String,
         sexo: String,
         telefono: String,
+        email: String,
+        pass: String
+    }
+
+    input UsuarioInputLogin{
         email: String,
         pass: String
     }
@@ -125,13 +135,14 @@ const typeDefs= gql `
         getCompras: [Compra]
         getComprasEstado(input:EstadoInput): [Compra]
         getCompra(id:ID!): [Compra]
-        login(input:UsuarioInput):Usuario
+        login(input:UsuarioInputLogin):UsuarioLogin
     }
 
     type Mutation {
         addUsuario(input:UsuarioInput): Alert
         addRol(input:RolInput): Alert
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
+        cambiarContrasena(id: ID!, input:UsuarioInput): Alert
         updateRolUsuario(id: ID!, input:RolInput): Alert
         updateProductoOcultar(id: ID!): Alert
         updateProductoMostrar(id: ID!): Alert
@@ -143,6 +154,8 @@ const typeDefs= gql `
         addCompra(id: ID!,input:CompraInput): Compra
         updateCompra(id: ID!, input: CompraInputUpdate): Compra
         deleteCompra(id: ID!): Alert
+        CambiarRol(id: ID!,input:RolInput): Alert
+
     }
 `
 
@@ -223,9 +236,11 @@ const resolvers = {
             const usuario = await Usuario.findOne({email:input.email});
             const validPassword = bcrypt.compareSync( input.pass, usuario.pass );
             if ( !validPassword ) {
-                console.log("Contraseña mala");
+                return {id:"Contraseña incorrecta",Rol:""}
             }
-            return usuario
+            const resp_rol= await Rol_Usuario.findOne({usuario:usuario._id})
+            const name_rol=await Rol.findById(resp_rol.rol)
+            return {id:usuario._id,Rol:name_rol.nombre}
         }
     },
     Mutation:{
@@ -292,6 +307,15 @@ const resolvers = {
                 message:"Rol eliminado"
             }
         },
+
+        async cambiarContrasena(obj,{id,input}){
+            const salt = bcrypt.genSaltSync();
+            const contra_nueva = bcrypt.hashSync( input.pass, salt );
+            await Usuario.findByIdAndUpdate(id,{pass:contra_nueva})
+            return{
+                message:"Contraseña cambiada"
+            }
+        },
 				
         async addProducto(obj,{input}){
             const producto=new Producto(input)
@@ -306,9 +330,7 @@ const resolvers = {
 
         async updateRolUsuario(obj,{id, input}){
             const rol_user=await Rol_Usuario.findOne({usuario:id})
-            console.log(rol_user);
             const rol_asignar=await Rol.findOne(input)
-            console.log(rol_asignar);
             await Rol_Usuario.findByIdAndUpdate(rol_user._id,{rol:rol_asignar._id})
             return{
                 message:"Se cambio el rol del usuario"
