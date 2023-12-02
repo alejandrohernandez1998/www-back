@@ -125,6 +125,10 @@ const typeDefs= gql `
     type Alert{
         message: String
     }
+    type Alert2{
+        message: String
+        id: String
+    }
 
     type Query{
         getUsuarios: [Usuario]
@@ -139,7 +143,7 @@ const typeDefs= gql `
     }
 
     type Mutation {
-        addUsuario(input:UsuarioInput): Alert
+        addUsuario(input:UsuarioInput): Alert2
         addRol(input:RolInput): Alert
         updateUsuario(id: ID!, input:UsuarioInput): Usuario
         cambiarContrasena(id: ID!, input:UsuarioInput): Alert
@@ -233,6 +237,7 @@ const resolvers = {
             return lista_return
         },
         async login(obj,{input}){
+            console.log(input);
             const usuario = await Usuario.findOne({email:input.email});
             const validPassword = bcrypt.compareSync( input.pass, usuario.pass );
             if ( !validPassword ) {
@@ -245,12 +250,13 @@ const resolvers = {
     },
     Mutation:{
         async addUsuario(obj,{input}){
-
+            console.log("entro");
             let usuario_re = await Usuario.findOne({ email:input.email });
 
             if ( usuario_re ) {
                 return{
-                    message:"Error el email ya esta registrado"
+                    message:"Error el email ya esta registrado",
+                    id:""
                 }
             }
 
@@ -260,9 +266,11 @@ const resolvers = {
             usuario.pass = bcrypt.hashSync( input.pass, salt );    
             const usuario_resp=await usuario.save()
             const rol_user= new Rol_Usuario({usuario:usuario_resp._id,rol:"653ed6eea02a92da55c680dc"})
-            await rol_user.save()
+            const guardado=await rol_user.save()
+            console.log(guardado);
             return{
-                message:"Usuario registrado"
+                message:"Usuario registrado",
+                id:guardado.usuario
             }
         },
         async addRol(obj,{input}){
