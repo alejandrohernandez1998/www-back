@@ -98,12 +98,13 @@ const typeDefs= gql `
 
 
     type Compra {
-        id: ID!
+        _id: ID!
         usuario: String
         estado: String
         direccion:direccionjson
         productos: [ProductoEnCompra]
         Monto: Int
+        fecha: String
     }
     
     
