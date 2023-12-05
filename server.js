@@ -14,7 +14,6 @@ const {merge, forEach} =require("lodash")
 const Usuario=require("./models/usuario")
 const Producto=require("./models/producto")
 const Compra = require("./models/compra")
-const Compra2 = require("./models/compra2")
 
 const Rol = require("./models/rol")
 const Rol_Usuario = require("./models/rol_usuario");
