@@ -9,17 +9,19 @@ const {ApolloServer,gql}=require("apollo-server-express")
 // const {graphiqlExpress,graphqlExpress}=require ("graphql-server-express")
 // const {makeExecutableSchema}=require("graphql-tools")
 
-const {merge} =require("lodash")
+const {merge, forEach} =require("lodash")
 
 const Usuario=require("./models/usuario")
 const Producto=require("./models/producto")
 const Compra = require("./models/compra")
+const Compra2 = require("./models/compra2")
+
 const Rol = require("./models/rol")
 const Rol_Usuario = require("./models/rol_usuario");
 const ProductoCompra = require("./models/productos_compra");
 
 
-mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/",{useNewUrlParser:true,useUnifiedTopology:true})
+mongoose.connect("mongodb+srv://admin:admin@bd-www.wvtvgbv.mongodb.net/test",{useNewUrlParser:true,useUnifiedTopology:true})
 
 const typeDefs= gql `
     type Usuario{
@@ -85,7 +87,7 @@ const typeDefs= gql `
 
     
     type ProductoEnCompra {
-        nombre: String
+        name: String
         cantidad: Int
     }
 
@@ -102,7 +104,6 @@ const typeDefs= gql `
         usuario: String
         estado: String
         direccion:direccionjson
-        productos: [ProductoEnCompra]
         Monto: Int
         fecha: String
     }
@@ -194,18 +195,9 @@ const resolvers = {
 
         async getCompras(obj){
             const lista=await Compra.find()
-            const lista_return=[] 
-            for (const element of lista) {
-                const lista_productos= await ProductoCompra.find({compra:element._id})
-                const lista_add=[]
-                for (const element1 of lista_productos) {
-                    const produc=await Producto.findById(element1.producto)
-                    lista_add.push({nombre:produc.nombre,cantidad:element1.cantidad})
-                }
-                lista_return.push({...element._doc,productos:lista_add})
-            }
 
-            return lista_return
+
+            return lista
         },
 
         async getCompra(obj, {id}){
@@ -385,6 +377,15 @@ const resolvers = {
 
             return {
                 message: "Compra eliminada"
+            }
+        },
+        async CambiarRol(obj, {id,input}){
+            console.log(id);
+            const respu= await Rol_Usuario.findOne({usuario:id})
+            const repu2= await Rol.findOne({nombre:input.nombre})
+            const a= await Rol_Usuario.findByIdAndUpdate(respu._id,{rol:repu2._id})
+            return {
+                message: "Rol Cambiado"
             }
         }
     }
